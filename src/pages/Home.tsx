@@ -15,7 +15,7 @@ export default function Home() {
             Dinshunoslik, Falsafa va Dasturlash bo‘yicha test platformasi
           </h1>
           <p className="max-w-2xl text-pretty text-sm leading-6 text-slate-300 sm:text-base">
-            Fanni tanlang → mavzuni tanlang → testni bajaring. Har bir savolga 25 soniya.
+            Fanni tanlang → variantni tanlang → testni bajaring. Har bir savolga 25 soniya.
             Savollar va javoblar tartibi har safar avtomatik aralashadi.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

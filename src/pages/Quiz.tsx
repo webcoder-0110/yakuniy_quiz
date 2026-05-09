@@ -31,6 +31,8 @@ export default function Quiz() {
   const [idx, setIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string | null>>({})
   const [remaining, setRemaining] = useState<number>(session?.timePerQuestionSec ?? 25)
+  const [reveal, setReveal] = useState(false)
+  const revealTimerRef = useRef<number | null>(null)
 
   const tickRef = useRef<number | null>(null)
 
@@ -44,7 +46,17 @@ export default function Quiz() {
     setIdx(0)
     setAnswers({})
     setStatus('idle')
+    setReveal(false)
+    if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+    revealTimerRef.current = null
   }, [session])
+
+  useEffect(() => {
+    return () => {
+      if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+      revealTimerRef.current = null
+    }
+  }, [])
 
   useEffect(() => {
     if (!session) return
@@ -96,6 +108,7 @@ export default function Quiz() {
     setStatus('in_progress')
     setIdx(0)
     setRemaining(sessionSafe.timePerQuestionSec)
+    setReveal(false)
   }
 
   function restart() {
@@ -107,16 +120,31 @@ export default function Quiz() {
   function choose(optionId: string) {
     if (status !== 'in_progress') return
     if (!current) return
+    if (reveal) return
+
     setAnswers((a) => ({ ...a, [current.id]: optionId }))
+    setReveal(true)
+
+    if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+    revealTimerRef.current = window.setTimeout(() => {
+      setReveal(false)
+      goNext(false)
+    }, 3000)
   }
 
   function goPrev() {
     if (idx <= 0) return
+    if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+    revealTimerRef.current = null
+    setReveal(false)
     setIdx((i) => i - 1)
     setRemaining(sessionSafe.timePerQuestionSec)
   }
 
   function goNext(auto = false) {
+    if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+    revealTimerRef.current = null
+    setReveal(false)
     if (idx >= total - 1) {
       finish()
       return
@@ -132,6 +160,9 @@ export default function Quiz() {
     setStatus('finished')
     if (tickRef.current) window.clearInterval(tickRef.current)
     tickRef.current = null
+    if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current)
+    revealTimerRef.current = null
+    setReveal(false)
   }
 
   const result = status === 'finished' ? scoreSession(sessionSafe, answers) : null
@@ -143,10 +174,10 @@ export default function Quiz() {
           to={`/subjects/${subjectId}`}
           className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white"
         >
-          <ArrowLeft className="size-4" /> Variantlar
+          <ArrowLeft className="size-4" /> Mavzular
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">{topic.title}</h1>
-        {topic.description ? <p className="text-sm text-slate-300">{topic.description}</p> : null}
+        
       </header>
 
       <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -213,7 +244,7 @@ export default function Quiz() {
               to={`/subjects/${subjectId}`}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-400"
             >
-              Boshqa variant <ChevronRight className="size-4" />
+              Boshqa mavzu <ChevronRight className="size-4" />
             </Link>
           </div>
 
@@ -298,27 +329,75 @@ export default function Quiz() {
           <div className="mt-5 grid gap-3">
             {current?.options.map((o) => {
               const selected = chosen === o.id
+
+              const correctOpt = current?.options.find((x) => x.isCorrect) ?? null
+              const isCorrect = Boolean(selected && o.isCorrect)
+              const isWrongSelected = Boolean(selected && !o.isCorrect)
+              const isCorrectToShow = Boolean(reveal && correctOpt && o.id === correctOpt.id)
+
+              const base = 'group w-full rounded-2xl border px-4 py-3 text-left text-sm transition'
+              const disabledStyle = status !== 'in_progress' ? 'opacity-70' : ''
+
+              const revealStyle = reveal
+                ? isCorrect || isCorrectToShow
+                  ? 'border-emerald-400/60 bg-emerald-500/10 ring-1 ring-emerald-400/25'
+                  : isWrongSelected
+                    ? 'border-rose-400/60 bg-rose-500/10 ring-1 ring-rose-400/25'
+                    : 'border-white/10 bg-slate-950/20'
+                : selected
+                  ? 'border-sky-400/60 bg-sky-500/10 ring-1 ring-sky-400/30'
+                  : 'border-white/10 bg-slate-950/20 hover:bg-white/5'
+
               return (
                 <button
                   key={o.id}
                   onClick={() => choose(o.id)}
-                  disabled={status !== 'in_progress'}
+                  disabled={status !== 'in_progress' || reveal}
                   className={cn(
-                    'group w-full rounded-2xl border px-4 py-3 text-left text-sm transition',
-                    selected
-                      ? 'border-sky-400/60 bg-sky-500/10 ring-1 ring-sky-400/30'
-                      : 'border-white/10 bg-slate-950/20 hover:bg-white/5',
-                    status !== 'in_progress' && 'opacity-70',
+                    base,
+                    revealStyle,
+                    disabledStyle,
                   )}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="font-medium text-slate-100">{o.text}</div>
-                    {selected ? <CheckCircle2 className="size-5 text-sky-300" /> : null}
+                    {reveal ? (
+                      isCorrect || isCorrectToShow ? (
+                        <CheckCircle2 className="size-5 text-emerald-300" />
+                      ) : isWrongSelected ? (
+                        <XCircle className="size-5 text-rose-300" />
+                      ) : null
+                    ) : selected ? (
+                      <CheckCircle2 className="size-5 text-sky-300" />
+                    ) : null}
                   </div>
                 </button>
               )
             })}
           </div>
+
+          {reveal && current ? (
+            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950/30 p-4 text-sm">
+              {(() => {
+                const pickedId = answers[current.id] ?? null
+                const pickedOpt = current.options.find((x) => x.id === pickedId) ?? null
+                const correctOpt = current.options.find((x) => x.isCorrect) ?? null
+                const ok = Boolean(pickedOpt?.isCorrect)
+                return (
+                  <div className="flex flex-col gap-1">
+                    <div className={cn('font-semibold', ok ? 'text-emerald-300' : 'text-rose-300')}>
+                      {ok ? "To‘g‘ri!" : "Noto‘g‘ri."}
+                    </div>
+                    {!ok && correctOpt ? (
+                      <div className="text-slate-300">
+                        To‘g‘ri javob: <span className="font-semibold text-emerald-300">{correctOpt.text}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                )
+              })()}
+            </div>
+          ) : null}
 
           <div className="mt-5 flex flex-col gap-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
             <div>

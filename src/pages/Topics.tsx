@@ -23,7 +23,7 @@ export default function Topics() {
         <Link to="/subjects" className="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white">
           <ArrowLeft className="size-4" /> Fanlar
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">{subject.title} — Mavzular</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{subject.title} — Variantlar</h1>
         <p className="text-sm text-slate-300">Mavzuni tanlang va testni boshlang.</p>
       </header>
 
@@ -33,9 +33,7 @@ export default function Topics() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="text-lg font-semibold">{t.title}</div>
-                {t.description ? (
-                  <div className="mt-1 text-sm text-slate-300">{t.description}</div>
-                ) : null}
+                
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/5 px-2 py-1 ring-1 ring-white/10">
                     <Shuffle className="size-3.5" /> Avto aralash

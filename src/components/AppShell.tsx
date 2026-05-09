@@ -29,10 +29,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-white/10 bg-slate-950/40">
         <div className="mx-auto max-w-6xl px-4 py-8 text-xs text-slate-300">
-          <div className=" text-slate-400 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>Bizdan biror yaxshilik ko'rgan bo'lsangiz ota onamiz haqqiga duo qiling</div>
-            <div className='text-white'>
-             Savollar va takliflar uchun: @fx_xolmurodov
+            <div className="text-slate-400">
+              Savollar va takliflar uchun: @fx_xolmurodov
             </div>
           </div>
         </div>

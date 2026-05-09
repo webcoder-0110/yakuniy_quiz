@@ -7,7 +7,7 @@ export default function Subjects() {
     <div className="grid gap-6">
       <header className="grid gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">Fanlar</h1>
-        <p className="text-sm text-slate-300">3 ta fandagi mavzulashtirilgan testlar.</p>
+        <p className="text-sm text-slate-300">3 ta fandagi yakuniy testlar.</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -26,7 +26,7 @@ export default function Subjects() {
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-              <span>{s.topics.length} variant</span>
+              <span>{s.topics.length} ta variant</span>
               <span className="inline-flex items-center gap-1 text-slate-200 transition group-hover:translate-x-0.5">
                 Ko‘rish <ArrowRight className="size-4" />
               </span>
